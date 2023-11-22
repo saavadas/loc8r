@@ -1,5 +1,7 @@
+require("dotenv").config();
+
 var mongoose = require("mongoose");
-var dbURI = "mongodb://127.0.0.1:27017/Loc8r";
+var dbURI = process.env.MONGODB_URI;
 
 mongoose.set("strictQuery", true);
 
@@ -38,3 +40,4 @@ process.on("SIGTERM", function () {
     process.exit(0);
   });
 });
+require("./locations");
