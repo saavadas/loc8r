@@ -1,31 +1,91 @@
 var mongoose = require("mongoose");
 var Loc = mongoose.model("Location");
-var sendJsonResponse = function (res, status, content) {
+var sendJSONresponse = function (res, status, content) {
   res.status(status);
   res.json(content);
 };
 module.exports.locationsListByDistance = function (req, res) {
-  sendJsonResponse(res, 200, { status: "success" });
+  var lng = parseFloat(req.query.lng);
+  var lat = parseFloat(req.query.lat);
+  var maxDistance = parseFloat(req.query.maxDistance);
+  var point = {
+    type: "Point",
+    coordinates: [lng, lat],
+  };
+  if (!lng || !lat || !maxDistance) {
+    console.log("locationsListByDistance missing params");
+    sendJSONresponse(res, 404, {
+      message: "lng, lat and maxDistance query parameters are all required",
+    });
+    return;
+  }
+  Loc.aggregate(
+    [
+      {
+        $geoNear: {
+          near: point,
+          spherical: true,
+          distanceField: "dist",
+          maxDistance: maxDistance,
+        },
+      },
+    ],
+    function (err, results) {
+      var locations = [];
+      // console.log(results);
+      if (err) {
+        sendJsonResponse(res, 404, err);
+      } else {
+        results.forEach(function (doc) {
+          // console.log(doc);
+          locations.push({
+            distance: doc.dist,
+            name: doc.name,
+            address: doc.address,
+            rating: doc.rating,
+            facilities: doc.facilities,
+            _id: doc._id,
+          });
+        });
+        sendJSONresponse(res, 200, locations);
+      }
+    }
+  );
+};
+var buildLocationList = function (req, res, results) {
+  console.log("buildLocationList:");
+  var locations = [];
+  results.forEach(function (doc) {
+    locations.push({
+      distance: doc.dist,
+      name: doc.name,
+      address: doc.address,
+      rating: doc.rating,
+      facilities: doc.facilities,
+      _id: doc._id,
+    });
+  });
+  return locations;
 };
 module.exports.locationsCreate = function (req, res) {
-  sendJsonResponse(res, 200, { status: "postsuccess" });
+  sendJSONresponse(res, 200, { status: "postsuccess" });
 };
 module.exports.locationsReadOne = function (req, res) {
   if (req.params && req.params.locationid) {
     Loc.findById(req.params.locationid).exec(function (err, location) {
       if (!location) {
-        sendJsonResponse(res, 404, {
+        sendJSONresponse(res, 404, {
           message: "locationid not found",
         });
         return;
       } else if (err) {
-        sendJsonResponse(res, 404, err);
+        sendJSONresponse(res, 404, err);
         return;
       }
-      sendJsonResponse(res, 200, location);
+      sendJSONresponse(res, 200, location);
     });
   } else {
-    sendJsonResponse(res, 404, {
+    sendJSONresponse(res, 404, {
       message: "No locationid in request",
     });
   }
