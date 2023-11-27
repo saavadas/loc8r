@@ -70,6 +70,31 @@ var buildLocationList = function (req, res, results) {
 module.exports.locationsCreate = function (req, res) {
   sendJSONresponse(res, 200, { status: "postsuccess" });
 };
+module.exports.locationsCreate = function (req, res) {
+  Loc.create(
+    {
+      name: req.body.name,
+      address: req.body.address,
+      facilities: req.body.facilities.split(","),
+      coords: [parseFloat(req.body.lng), parseFloat(req.body.lat)],
+      openingTimes: [
+        {
+          days: req.body.days,
+          opening: req.body.opening,
+          closing: req.body.closing,
+          closed: req.body.closed,
+        },
+      ],
+    },
+    function (err, location) {
+      if (err) {
+        sendJSONresponse(res, 400, err);
+      } else {
+        sendJSONresponse(res, 201, location);
+      }
+    }
+  );
+};
 module.exports.locationsReadOne = function (req, res) {
   if (req.params && req.params.locationid) {
     Loc.findById(req.params.locationid).exec(function (err, location) {
