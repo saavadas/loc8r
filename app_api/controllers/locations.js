@@ -68,9 +68,6 @@ var buildLocationList = function (req, res, results) {
   return locations;
 };
 module.exports.locationsCreate = function (req, res) {
-  sendJSONresponse(res, 200, { status: "postsuccess" });
-};
-module.exports.locationsCreate = function (req, res) {
   Loc.create(
     {
       name: req.body.name,
