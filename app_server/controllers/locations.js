@@ -1,3 +1,5 @@
+require("dotenv").config();
+
 let request = require("request");
 const apiOptions = {
   server: process.env.SERVER,
