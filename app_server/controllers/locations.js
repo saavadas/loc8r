@@ -126,3 +126,4 @@ module.exports.addReview = function (req, res, next) {
     pageHeader: { title: "Review Starcups" },
   });
 };
+module.exports.doAddReview = function (req, res) {};
