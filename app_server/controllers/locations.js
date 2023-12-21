@@ -6,28 +6,28 @@ const apiOptions = {
 };
 /* GET 'home' page. */
 let renderHomepage = function (req, res, responseBody) {
-  let message;
+  /*let message;
   if (!(responseBody instanceof Array)) {
     message = "API lookup error";
     responseBody = [];
   } else if (!responseBody.length) {
     message = "No places found nearby";
   }
-  try {
-    res.render("locations-list", {
-      title: "Loc8r - find a place to work with wifi",
-      pageHeader: {
-        title: "Loc8r",
-        strapline: "Find places to work with wifi near you",
-      },
-      sidebar:
-        "Looking for wifi and a seat? Loc8r helps you find places to work when out and about. Perhaps with coffee, cake or a pint? Let Loc8r help you find the place you're looking for.",
-      locations: responseBody,
-      message: message,
-    });
-  } catch (err) {
+  try {*/
+  res.render("locations-list", {
+    title: "Loc8r - find a place to work with wifi",
+    pageHeader: {
+      title: "Loc8r",
+      strapline: "Find places to work with wifi near you",
+    },
+    sidebar:
+      "Looking for wifi and a seat? Loc8r helps you find places to work when out and about. Perhaps with coffee, cake or a pint? Let Loc8r help you find the place you're looking for.",
+    // locations: responseBody,
+    // message: message,
+  });
+  /*} catch (err) {
     console.log(err);
-  }
+  }*/
 };
 let _distanceValue = function (distance) {
   let numDistance, unit;
@@ -41,7 +41,7 @@ let _distanceValue = function (distance) {
   return numDistance + unit;
 };
 module.exports.homeList = function (req, res, body) {
-  const path = "/api/locations";
+  /*const path = "/api/locations";
   const requestOptions = {
     url: apiOptions.server + path,
     method: "GET",
@@ -58,16 +58,16 @@ module.exports.homeList = function (req, res, body) {
       for (let i = 0; i < data.length; i++) {
         data[i].distance = _distanceValue(data[i].distance);
       }
-    }
-    renderHomepage(req, res, data);
-    /*if (err) {
+    }*/
+  renderHomepage(req, res);
+  /*if (err) {
       //throw err
     } else if (response.statusCode === 200) {
       //all fine
     } else {
       //throw err
     )*/
-  });
+  // });
 };
 
 let _showError = function (req, res, status) {
@@ -103,6 +103,7 @@ var renderReviewForm = function (req, res, locDetail) {
   res.render("location-review-form", {
     title: "Review " + locDetail.name + " on Loc8r",
     pageHeader: { title: "Review " + locDetail.name },
+    error: req.query.err,
   });
 };
 var getLocationInfo = function (req, res, callback) {
@@ -150,11 +151,21 @@ module.exports.doAddReview = function (req, res) {
     method: "POST",
     json: postdata,
   };
-  request(requestOptions, function (err, response, body) {
-    if (response.statusCode === 201) {
-      res.redirect("/location/" + locationid);
-    } else {
-      _showError(req, res, response.statusCode);
-    }
-  });
+  if (!postdata.author || !postdata.rating || !postdata.reviewText) {
+    res.redirect("/location/" + locationid + "/reviews/new?err=val");
+  } else {
+    request(requestOptions, function (err, response, body) {
+      if (response.statusCode === 201) {
+        res.redirect("/location/" + locationid);
+      } else if (
+        response.statusCode === 400 &&
+        body.name &&
+        body.name === "ValidationError"
+      ) {
+        res.redirect("/location/" + locationid + "/reviews/new?err=val");
+      } else {
+        _showError(req, res, response.statusCode);
+      }
+    });
+  }
 };
