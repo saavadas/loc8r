@@ -26,16 +26,30 @@ let ratingStars = function () {
 let loc8rData = function ($http) {
   return $http.get("/api/locations?lng=61.2807&lat=55.1695&maxDistance=20000");
 };
-let locationListCtrl = function ($scope, loc8rData) {
+let locationListCtrl = function ($scope, loc8rData, geolocation) {
+  $scope.message = "Searching for nearby places";
   loc8rData
     .success(function (data) {
+      $scope.message = data.length > 0 ? "" : "No locations found";
       $scope.data = {
         locations: data,
       };
     })
     .error(function (e) {
-      console.log(e);
+      $scope.message = "Sorry, something's gone wrong ";
     });
+};
+let geolocation = function () {
+  let getPosition = function (cbSuccess, cbError, cbNoGeo) {
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(cbSuccess, cbError);
+    } else {
+      cbNoGeo();
+    }
+  };
+  return {
+    getPosition: getPosition,
+  };
 };
 
 angular
@@ -43,4 +57,5 @@ angular
   .controller("locationListCtrl", locationListCtrl)
   .filter("formatDistance", formatDistance)
   .directive("ratingStars", ratingStars)
-  .service("loc8rData", loc8rData);
+  .service("loc8rData", loc8rData)
+  .service("geolocation", geolocation);
