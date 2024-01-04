@@ -104,6 +104,7 @@ var renderReviewForm = function (req, res, locDetail) {
     title: "Review " + locDetail.name + " on Loc8r",
     pageHeader: { title: "Review " + locDetail.name },
     error: req.query.err,
+    url: req.originalUrl,
   });
 };
 var getLocationInfo = function (req, res, callback) {

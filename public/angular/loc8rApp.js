@@ -24,20 +24,42 @@ let ratingStars = function () {
   };
 };
 let loc8rData = function ($http) {
-  return $http.get("/api/locations?lng=61.2807&lat=55.1695&maxDistance=20000");
+  let locationByCoords = function (lat, lng) {
+    return $http.get(
+      "/api/locations?lng=" + lng + "&lat=" + lat + "&maxDistance=20000"
+    );
+  };
+  return {
+    locationByCoords: locationByCoords,
+  };
 };
-let locationListCtrl = function ($scope, loc8rData, geolocation) {
-  $scope.message = "Searching for nearby places";
-  loc8rData
-    .success(function (data) {
-      $scope.message = data.length > 0 ? "" : "No locations found";
-      $scope.data = {
-        locations: data,
-      };
-    })
-    .error(function (e) {
-      $scope.message = "Sorry, something's gone wrong ";
+var locationListCtrl = function ($scope, loc8rData, geolocation) {
+  $scope.message = "Checking your location";
+  $scope.getData = function (position) {
+    var lat = position.coords.latitude,
+      lng = position.coords.longitude;
+    $scope.message = "Searching for nearby places";
+    loc8rData
+      .locationByCoords(lat, lng)
+      .success(function (data) {
+        $scope.message = data.length > 0 ? "" : "No locations found";
+        $scope.data = { locations: data };
+      })
+      .error(function (e) {
+        $scope.message = "Sorry, something's gone wrong";
+      });
+  };
+  $scope.showError = function (error) {
+    $scope.$apply(function () {
+      $scope.message = error.message;
     });
+  };
+  $scope.noGeo = function () {
+    $scope.$apply(function () {
+      $scope.message = "Geolocation not supported by this browser.";
+    });
+  };
+  geolocation.getPosition($scope.getData, $scope.showError, $scope.noGeo);
 };
 let geolocation = function () {
   let getPosition = function (cbSuccess, cbError, cbNoGeo) {
