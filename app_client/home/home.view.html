@@ -15,8 +15,7 @@
     <div class="row list-group">
       <div
         class="col-xs-12 list-group-item"
-        ng-repeat="location in
-vm.data.locations | filter : textFilter"
+        ng-repeat="location in vm.data.locations | filter : textFilter"
       >
         <h4>
           <a href="/location/{{ location._id }}">{{ location.name }}</a>
